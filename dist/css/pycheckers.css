@@ -1,0 +1,118 @@
+/* General */
+
+body {
+    overflow-y: scroll;
+}
+
+a {
+    text-decoration: none;
+}
+
+.container {
+    padding-left: 5%;
+    padding-right: 5%;
+    max-width: 60rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container--wide {
+    max-width: 80rem;
+}
+
+.container--narrow {
+    max-width: 40rem;
+}
+
+.section {
+    padding-top: 15vh;
+    padding-bottom: 15vh;
+}
+
+.section--small {
+    padding-top: 5vh;
+    padding-bottom: 5vh;
+}
+
+/* Header */
+
+.header {
+    background: #3794de
+}
+
+.header a {
+    color: #fff;
+    opacity: 0.6;
+}
+
+.header a:hover {
+    opacity: 1;
+}
+
+.header .menu__item--active a {;
+    opacity: 1;
+}
+
+.navbar__title {
+    display: inline-block;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.menu {
+    display: inline-block;
+    margin: 0;
+    text-align: center;
+}
+
+.menu__item {
+    display: inline-block;
+    font-weight: 700;
+    padding: 0 1rem;
+}
+
+.menu__item:first-child {
+    padding-left: 0;
+}
+
+.menu__item:last-child {
+    padding-right: 0;
+}
+
+/* Main */
+
+.main {
+
+}
+
+/* Board */
+
+.board {
+    border: 3px solid #000;
+}
+
+.board td {
+    background: #fff;
+    width: 12.5%;
+    padding-bottom: 12.5%;
+}
+
+.board tr:nth-child(odd) td:nth-child(even),
+.board tr:nth-child(even) td:nth-child(odd) {
+    background: #000;
+}
+
+/* Footer */
+
+.footer {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.footer p {
+    margin: 0;
+}
+
+.footer__more {
+    text-align: right;
+}
