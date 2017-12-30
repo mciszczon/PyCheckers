@@ -2,7 +2,7 @@
 
 English draughts (aka checkers) web-based game written in Python 3 and Flask.
 
-__This readme document will be extended heavily as the time goes._
+_This readme document will be extended heavily as the time goes._
 
 ## Read more
 

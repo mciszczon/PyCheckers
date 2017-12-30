@@ -1,5 +1,13 @@
 /* General */
 
+.visuallyhidden { 
+  position: absolute; 
+  overflow: hidden; 
+  clip: rect(0 0 0 0); 
+  height: 1px; width: 1px; 
+  margin: -1px; padding: 0; border: 0; 
+}
+
 body {
     overflow-y: scroll;
 }
@@ -88,7 +96,7 @@ a {
 /* Board */
 
 .board {
-    border: 3px solid #000;
+
 }
 
 .board td {
@@ -99,7 +107,49 @@ a {
 
 .board tr:nth-child(odd) td:nth-child(even),
 .board tr:nth-child(even) td:nth-child(odd) {
-    background: #000;
+    background: #888;
+}
+
+.board td {
+    position: relative;
+}
+
+.piece {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -0.75rem;
+    margin-left: -0.75rem;
+    border-radius: 50%;
+}
+
+.piece--man {
+    
+}
+
+.piece--king {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50%;
+}
+
+.player1.piece {
+    background-color: #000;
+}
+
+.player2.piece {
+    background-color: #fff;
+}
+
+.player1.piece--king {
+    background-image: url(../img/crown_white.png);
+}
+
+.player2.piece--king {
+    background-image: url(../img/crown_black.png);
 }
 
 /* Footer */
@@ -115,4 +165,20 @@ a {
 
 .footer__more {
     text-align: right;
+}
+
+@media screen and (min-width: 768px) {
+    
+    .piece {
+        width: 3rem;
+        height: 3rem;
+        margin-left: -1.5rem;
+        margin-top: -1.5rem;
+    }
+    
+    .piece--king {
+        
+    }
+
+    
 }
