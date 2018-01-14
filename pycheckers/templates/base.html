@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PyCheckers | {% block title %}{% endblock %}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Kube CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kube.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pycheckers.css') }}">
+    
+    <!-- Font Awesome -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+
+</head>
+<body>
+
+    <header class="header section section--small">
+        <div class="container container--wide">
+            <nav class="navbar row align-middle between">
+                <h1 class="navbar__title">
+                    <a href="{{ url_for('index') }}">PyCheckers</a>
+                </h1>
+                <ul class="menu">
+                    <li class="menu__item {% if url_for('board') == rule %} menu__item--active {% endif %}">
+                        <a href="{{ url_for('board') }}">Board</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+ 
+    <main class="main section">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="footer section section--small">
+        <div class="container container--wide">
+            <div class="row gutters auto between align-middle">
+                <div class="col">
+                    <p>Created by <a href="https://mciszczon.pl/">Mateusz Ciszczoń</a></p>
+                </div>
+                <div class="col footer__more">
+                    <ul class="menu">
+                        <li class="menu__item">
+                            <a href="https://github.com/mciszczon/pycheckers">Github</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Kube JS + jQuery are used for some functionality, but are not required for the basic setup -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/kube.js') }}"></script>
+</body>
+</html>

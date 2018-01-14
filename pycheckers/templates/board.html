@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Board demo{% endblock %}
+{% block content %}
+        <div class="container">
+            <h2>Board demo</h2>
+            <p class="large">This is just a demo!</p>
+
+            <table class="board unstyled">
+                {% for row in board.rows %}
+                    <tr id="row-{{ row }}">
+                    {% for column in board.columns %}
+                        <td id="box-{{ row }},{{ column }}">
+                            {% if (row, column) in player_white.positions %}
+                                <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                            {% elif (row, column) in player_black.positions %}
+                                <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                            {% elif rule == '/board/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
+                                {% if (row is even and column is odd) or (row is odd and column is even) %}
+                                    <a class="box box--moveable" href="{{ url_for('move', coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+
+            </table>
+            
+            <div class="row gutters auto between u-margin-top">
+                <div class="col">
+                    <h3>White loses</h3>
+                    <ul class="loses loses--white">
+                        <li class="loses__lost">
+                            <div class="lost-piece"></div>
+                        </li>
+                        <li class="loses__lost">
+                            <div class="lost-piece"></div>
+                        </li>
+                        <li class="loses__lost">
+                            <div class="lost-piece"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col u-text-right">
+                    <h3>Black loses</h3>
+                    <ul class="loses loses--black">
+                        <li class="loses__lost">
+                            <div class="lost-piece"></div>
+                        </li>
+                        <li class="loses__lost">
+                            <div class="lost-piece"></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+{% endblock %}

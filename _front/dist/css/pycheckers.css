@@ -42,10 +42,31 @@ a {
     padding-bottom: 5vh;
 }
 
+.u-text-center {
+    text-align: center;
+}
+
+.u-text-right {
+    text-align: right;
+}
+
+.u-margin-top {
+    margin-top: 4rem;
+}
+
+.button h2,
+.button h3,
+.button h4,
+.button h5,
+.button h6 {
+    margin-top: 0;
+    line-height: 1;
+}
+
 /* Header */
 
 .header {
-    background: #3794de
+    background: #1c86f2;
 }
 
 .header a {
@@ -100,6 +121,7 @@ a {
 }
 
 .board td {
+    position: relative;
     background: #fff;
     width: 12.5%;
     padding-bottom: 12.5%;
@@ -107,11 +129,24 @@ a {
 
 .board tr:nth-child(odd) td:nth-child(even),
 .board tr:nth-child(even) td:nth-child(odd) {
-    background: #888;
+    background: #aaa;
 }
 
-.board td {
-    position: relative;
+.box.box--moveable {
+    position: absolute;
+    top: 20%;
+    right: 0;
+    bottom: 0;
+    left: 20%;
+    display: block;
+    width: 60%;
+    height: 60%;
+    border-radius:50%;
+}
+
+.box.box--moveable:hover,
+.box-.box--moveable:focus {
+    background: #3794de;
 }
 
 .piece {
@@ -124,6 +159,14 @@ a {
     margin-top: -0.75rem;
     margin-left: -0.75rem;
     border-radius: 50%;
+}
+
+a.piece:hover,
+a.piece:focus,
+.piece--selected {
+    -webkit-box-shadow: 0 0 10px 5px #3794de;
+    -moz-box-shadow: 0 0 10px 5px #3794de;
+    box-shadow: 0 0 10px 5px #3794de;
 }
 
 .piece--man {
@@ -152,6 +195,39 @@ a {
     background-image: url(../img/crown_black.png);
 }
 
+.loses {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.loses__lost {
+    display: inline-block;
+    margin: 0.125rem;
+}
+
+.loses__lost:first-child {
+    margin-left: 0;
+}
+
+.loses__lost:last-child {
+    margin-right: 0;
+}
+
+.lost-piece {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+}
+
+.loses--white .lost-piece {
+    background: #999;
+}
+
+.loses--black .lost-piece {
+    background: #333;
+}
+
 /* Footer */
 
 .footer {
@@ -167,18 +243,46 @@ a {
     text-align: right;
 }
 
+@media screen and (min-width: 586px) {
+    .piece {
+        width: 2.5rem;
+        height: 2.5rem;
+        margin-top: -1.25rem;
+        margin-left: -1.25rem;
+    }
+}
+
 @media screen and (min-width: 768px) {
     
     .piece {
-        width: 3rem;
-        height: 3rem;
-        margin-left: -1.5rem;
-        margin-top: -1.5rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        margin-left: -1.625rem;
+        margin-top: -1.625rem;
     }
     
     .piece--king {
         
     }
 
+    
+}
+
+@media screen and (min-width: 980px) {
+    .piece {
+        width: 4rem;
+        height: 4rem;
+        margin-top: -2rem;
+        margin-left: -2rem;
+    }
+    
+    .loses__lost {
+        margin: 0.35rem;
+    }
+    
+    .lost-piece {
+        width: 2rem;
+        height: 2rem;
+    }
     
 }
