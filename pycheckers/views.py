@@ -15,8 +15,6 @@ columns = board_initialized.get_columns()
 player_black = utils.PlayerBlack()
 player_white = utils.PlayerWhite()
 
-turn = {'black', 'white'}
-
 
 @app.route('/')
 def index():
@@ -47,8 +45,8 @@ def select(coordinate_x, coordinate_y):
     :return render_template() or redirect():
     """
 
-    # TODO: This check should be more sophisticated with user turns implemented.
-    if coordinate_x in board_initialized.get_rows() and coordinate_y in board_initialized.get_columns():
+    if board_initialized.turn == 0 and (coordinate_x, coordinate_y) in player_black.positions\
+            or board_initialized.turn == 1 and (coordinate_x, coordinate_y) in player_white.positions:
         return render_template('board.html', coordinate_x=coordinate_x, coordinate_y=coordinate_y)
     else:
         return redirect(url_for('board'))
@@ -65,18 +63,39 @@ def move(coordinate_x, coordinate_y, to_x, to_y):
     :return redirect():
     """
 
+    # Checking whether move is allowed
+    # 1. By one square only
     if math.fabs(coordinate_x - to_x) != 1 or math.fabs(coordinate_y - to_y) != 1\
             or to_x not in board_initialized.get_rows() or to_y not in board_initialized.get_columns()\
             or (to_x, to_y) in player_white.positions or (to_x, to_y) in player_black.positions:
         return redirect(url_for('select', coordinate_x=coordinate_x, coordinate_y=coordinate_y))
 
-    # TODO: This should happen based on which player's turn it is.
-    if (coordinate_x, coordinate_y) in player_white.positions:
-        player_white.positions.remove((coordinate_x, coordinate_y))
-        player_white.positions.add((to_x, to_y))
-    elif (coordinate_x, coordinate_y) in player_black.positions:
+    # 2. Only into gray boxes
+    if not board_initialized.check_if_allowed(to_x, to_y):
+        return redirect(url_for('select', coordinate_x=coordinate_x, coordinate_y=coordinate_y))
+    if (coordinate_x, coordinate_y) not in player_black.kings\
+        and (coordinate_x, coordinate_y) not in player_white.kings\
+            and (board_initialized.turn == 0 and coordinate_x <= to_x
+                 or board_initialized.turn == 1 and coordinate_x >= to_x):
+        return redirect(url_for('select', coordinate_x=coordinate_x, coordinate_y=coordinate_y))
+
+    if board_initialized.turn == 0 and (coordinate_x, coordinate_y) in player_black.positions:
         player_black.positions.remove((coordinate_x, coordinate_y))
         player_black.positions.add((to_x, to_y))
+        board_initialized.change_turn()
+    elif board_initialized.turn == 1 and (coordinate_x, coordinate_y) in player_white.positions:
+        player_white.positions.remove((coordinate_x, coordinate_y))
+        player_white.positions.add((to_x, to_y))
+        board_initialized.change_turn()
+
+    # Check whether there are pieces to turn into kings
+    for piece in player_black.positions:
+        if piece[0] == 0:  # Row is 0, so black player has a piece at white's base
+            player_black.kings.add(piece)
+
+    for piece in player_white.positions:
+        if piece[0] == 7:  # Row is 7, so white player has a piece at black's base
+            player_white.kings.add(piece)
 
     return redirect(url_for('board'))
 
@@ -92,5 +111,6 @@ def inject_variables():
         rule=str(request.url_rule),
         board={'rows': rows, 'columns': columns},
         player_black=player_black,
-        player_white=player_white
+        player_white=player_white,
+        turn=board_initialized.turn
     )

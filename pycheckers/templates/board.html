@@ -2,8 +2,12 @@
 {% block title %}Board demo{% endblock %}
 {% block content %}
         <div class="container">
-            <h2>Board demo</h2>
-            <p class="large">This is just a demo!</p>
+            <h2>Game demo</h2>
+
+            <div class="message" data-component="message">
+                {% if turn == 0 %}Black's{% elif turn == 1%}White's{% endif %} turn.
+                <span class="close small"></span>
+            </div>
 
             <table class="board unstyled">
                 {% for row in board.rows %}
@@ -11,9 +15,17 @@
                     {% for column in board.columns %}
                         <td id="box-{{ row }},{{ column }}">
                             {% if (row, column) in player_white.positions %}
-                                <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                {% if turn == 1 %}
+                                    <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                {% elif turn == 0 %}
+                                    <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
+                                {% endif %}
                             {% elif (row, column) in player_black.positions %}
-                                <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                {% if turn == 0 %}
+                                    <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                {% elif turn == 1 %}
+                                    <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
+                                {% endif %}
                             {% elif rule == '/board/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
                                 {% if (row is even and column is odd) or (row is odd and column is even) %}
                                     <a class="box box--moveable" href="{{ url_for('move', coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
