@@ -2,11 +2,10 @@
 {% block title %}Board demo{% endblock %}
 {% block content %}
         <div class="container">
-            <h2>Game demo</h2>
+            <h2>{{ name|escape }}</h2>
 
             <div class="message" data-component="message">
                 {% if turn == 0 %}Black's{% elif turn == 1%}White's{% endif %} turn.
-                <span class="close small"></span>
             </div>
 
             <table class="board unstyled">
@@ -16,53 +15,55 @@
                         <td id="box-{{ row }},{{ column }}">
                             {% if (row, column) in player_white.positions %}
                                 {% if turn == 1 %}
-                                    <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                    <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
                                 {% elif turn == 0 %}
                                     <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
                                 {% endif %}
                             {% elif (row, column) in player_black.positions %}
                                 {% if turn == 0 %}
-                                    <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', coordinate_x=row, coordinate_y=column) }}"></a>
+                                    <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
                                 {% elif turn == 1 %}
                                     <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
                                 {% endif %}
-                            {% elif rule == '/board/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
+                            {% elif rule == '/game/<string:game_id>/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
                                 {% if (row is even and column is odd) or (row is odd and column is even) %}
-                                    <a class="box box--moveable" href="{{ url_for('move', coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                    <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
                                 {% endif %}
                             {% endif %}
                         </td>
                     {% endfor %}
                     </tr>
                 {% endfor %}
-
             </table>
             
-            <div class="row gutters auto between u-margin-top">
-                <div class="col">
+            <div class="row gutters between u-margin-top">
+                <div class="col col-6">
                     <h3>White loses</h3>
-                    <ul class="loses loses--white">
-                        <li class="loses__lost">
-                            <div class="lost-piece"></div>
-                        </li>
-                        <li class="loses__lost">
-                            <div class="lost-piece"></div>
-                        </li>
-                        <li class="loses__lost">
-                            <div class="lost-piece"></div>
-                        </li>
-                    </ul>
+                    {% if player_white.pieces < 12 %}
+                        <ul class="loses loses--white">
+                            {% for piece in range(player_white.pieces, 12) %}
+                                <li class="loses__lost">
+                                    <div class="lost-piece"></div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No loses!</p>
+                    {% endif %}
                 </div>
-                <div class="col u-text-right">
+                <div class="col col-6 u-text-right">
                     <h3>Black loses</h3>
-                    <ul class="loses loses--black">
-                        <li class="loses__lost">
-                            <div class="lost-piece"></div>
-                        </li>
-                        <li class="loses__lost">
-                            <div class="lost-piece"></div>
-                        </li>
-                    </ul>
+                    {% if player_black.pieces < 12 %}
+                        <ul class="loses loses--black">
+                            {% for piece in range(player_black.pieces, 12) %}
+                                <li class="loses__lost">
+                                    <div class="lost-piece"></div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No loses!</p>
+                    {% endif %}
                 </div>
             </div>
             

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Error 404{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>The page you were looking for was not found.</h2>
+        <p class="large">It may have been deleted, or it was never here.</p>
+        <p>You can <a href="{{ url_for('index') }}">go to homepage</a> or <a href="{{ url_for('start') }}">start a new game</a>.</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Start{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>Start a new game</h2>
+        <form method="post" action="{{ url_for('start') }}" class="form">
+            <div class="form-item">
+                <label class="large strong">Name of the game <span class="req">*</span></label>
+                <input class="big" type="text" name="name" required>
+                <div class="desc">Enter the name of your game.</div>
+            </div>
+            <div class="form-item form-checkboxes">
+                <p class="large strong">Who do you want to play against? <span class="req">*</span></p>
+                <label class="checkbox"><input type="radio" name="gametype" value="computer" required disabled> Computer</label>
+                <label class="checkbox"><input type="radio" name="gametype" value="human" required> Another player</label>
+            </div>
+            <div class="form-item">
+                <button>Start a game</button>
+                <a class="button secondary outline" href="{{ url_for('index') }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

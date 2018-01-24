@@ -6,12 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Kube CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/kube.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pycheckers.css') }}">
-    
-    <!-- Font Awesome -->
-    <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
 
 </head>
 <body>
@@ -23,13 +19,30 @@
                     <a href="{{ url_for('index') }}">PyCheckers</a>
                 </h1>
                 <ul class="menu">
-                    <li class="menu__item {% if url_for('board') == rule %} menu__item--active {% endif %}">
-                        <a href="{{ url_for('board') }}">Board</a>
+                    <li class="menu__item {% if rule == '/' %}menu__item--active{% endif %}">
+                        <a href="{{ url_for('index') }}">Index</a>
+                    </li>
+                    <li class="menu__item {% if rule == '/start' %}menu__item--active{% endif %}">
+                        <a href="{{ url_for('start') }}">New game</a>
+                    </li>
+                    <li class="menu__item {% if rule == '/games' %}menu__item--active{% endif %}">
+                        <a href="{{ url_for('active_games') }}">Games</a>
                     </li>
                 </ul>
             </nav>
         </div>
     </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message {{ category }}" data-component="message">
+                    {{ message }}
+                    <span class="close small"></span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
  
     <main class="main section">
         {% block content %}{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Active games{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>Active games</h2>
+        <p class="large">Below you can see a list of all active games.</p>
+        {% if games %}
+            <div class="row gutters">
+            {% for game in games %}
+                <div class="col col-4">
+                    <a class="game" href="{{ url_for('game', game_id=game) }}">
+                        {% if games[game].gametype == 'human' %}
+                            <span class="label black">Human vs. human</span>
+                        {% else %}
+                            <span class="label focus">Human vs. computer</span>
+                        {% endif %}
+                        <h3>{{ games[game].name }}</h3>
+                    </a>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p>No games currently. Why don't you <a href="{{ url_for('start') }}">start one</a>?</p>
+        {% endif %}
+    </div>
+{% endblock %}
