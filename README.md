@@ -19,6 +19,11 @@ I also describe English draughts rules extensively for those who do not know the
 Here we learn how to set up a development environment for Flask.
 Then we will create a very simple base application with Flask, so that next time we can start creating the game itself.
 
+### [#3 — Dynamic board with turns and selectable pieces](https://steemit.com/utopian-io/@mciszczon/en-pycheckers-3-dynamic-board-with-turns-and-selectable-pieces)
+
+In third part I have created some base Classes for the game, and using those classes I was able to generate a dynamic chessboard.
+Then I allowed user to select black or white piece—determined by turn.
+
 ---
 
 _More posts coming soon._
