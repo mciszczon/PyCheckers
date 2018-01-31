@@ -9,10 +9,21 @@
                 <input class="big" type="text" name="name" required>
                 <div class="desc">Enter the name of your game.</div>
             </div>
-            <div class="form-item form-checkboxes">
-                <p class="large strong">Who do you want to play against? <span class="req">*</span></p>
-                <label class="checkbox"><input type="radio" name="gametype" value="computer" required disabled> Computer</label>
-                <label class="checkbox"><input type="radio" name="gametype" value="human" required> Another player</label>
+            <div class="row gutters">
+                <div class="col col-6 form-item form-checkboxes">
+                    <p class="large strong">Who do you want to play against? <span class="req">*</span></p>
+                    <label class="checkbox"><input type="radio" name="gametype" value="computer" required disabled> Computer</label>
+                    <label class="checkbox"><input type="radio" name="gametype" value="human" required checked> Another player</label>
+                </div>
+                <div class="col col-6 form-item form-checkboxes">
+                    <p class="large strong">Create a private game? <span class="req">*</span></p>
+                    <label class="checkbox"><input type="radio" name="private" value="public" required checked> No</label>
+                    <label class="checkbox"><input type="radio" name="private" value="private" required> Yes, make my game private</label>
+                    <div class="desc">
+                        <p>Private games are not listed in <a href="{{ url_for('active_games') }}">active games</a> list and only players can view them.
+                            They are best if you want invite someone to play with you.</p>
+                    </div>
+                </div>
             </div>
             <div class="form-item">
                 <button>Start a game</button>

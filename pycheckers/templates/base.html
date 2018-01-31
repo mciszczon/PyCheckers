@@ -16,35 +16,71 @@
         <div class="container container--wide">
             <nav class="navbar row align-middle between">
                 <h1 class="navbar__title">
-                    <a href="{{ url_for('index') }}">PyCheckers</a>
+                    <a href="{{ url_for('index') }}">
+                        PyCheckers
+                    </a>
                 </h1>
                 <ul class="menu">
-                    <li class="menu__item {% if rule == '/' %}menu__item--active{% endif %}">
-                        <a href="{{ url_for('index') }}">Index</a>
-                    </li>
-                    <li class="menu__item {% if rule == '/start' %}menu__item--active{% endif %}">
-                        <a href="{{ url_for('start') }}">New game</a>
-                    </li>
-                    <li class="menu__item {% if rule == '/games' %}menu__item--active{% endif %}">
-                        <a href="{{ url_for('active_games') }}">Games</a>
-                    </li>
+                    {% if g.user.is_authenticated %}
+                        <li class="menu__item {% if rule == '/new-game' %}menu__item--active{% endif %}">
+                            <a href="{{ url_for('start') }}">
+                                <span class="fas fa-plus-square"></span>
+                                New game
+                            </a>
+                        </li>
+                        <li class="menu__item {% if rule == '/games' %}menu__item--active{% endif %}">
+                            <a href="{{ url_for('active_games') }}">
+                                <span class="fas fa-puzzle-piece"></span>
+                                Active games
+                            </a>
+                        </li>
+                        <li class="menu__item {% if rule == '/profile' %}menu__item--active{% endif %}">
+                            <a href="{{ url_for('profile') }}">
+                                <span class="fas fa-user"></span>
+                                <span class="">{{ g.user.username }}</span>
+                            </a>
+                        </li>
+                        <li class="menu__item">
+                            <a href="{{ url_for('logout') }}">
+                                <span class="fas fa-sign-out-alt"></span>
+                                <span class="">Log out</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="menu__item {% if rule == '/login' %}menu__item--active{% endif %}">
+                            <a href="{{ url_for('login') }}">
+                                <span class="fas fa-sign-in-alt"></span>
+                                Log in
+                            </a>
+                        </li>
+                        <li class="menu__item {% if rule == '/register' %}menu__item--active{% endif %}">
+                            <a href="{{ url_for('register') }}">
+                                <span class="fas fa-user-plus"></span>
+                                Register
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
     </header>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="message {{ category }}" data-component="message">
-                    {{ message }}
-                    <span class="close small"></span>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
  
     <main class="main section">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages-container">
+                    {% for category, message in messages %}
+                        <div class="container container--wide">
+                            <div class="message {{ category }}" data-component="message">
+                                <p>{{ message }}</p>
+                                <span class="close big"></span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
     
@@ -52,12 +88,21 @@
         <div class="container container--wide">
             <div class="row gutters auto between align-middle">
                 <div class="col">
-                    <p>Created by <a href="https://mciszczon.pl/">Mateusz Ciszczoń</a></p>
+                    <p><span>Created by</span> <a href="https://mciszczon.pl/">Mateusz Ciszczoń</a></p>
                 </div>
                 <div class="col footer__more">
                     <ul class="menu">
                         <li class="menu__item">
-                            <a href="https://github.com/mciszczon/pycheckers">Github</a>
+                            <a href="https://github.com/mciszczon/pycheckers">
+                                <span class="fab fa-github"></span>
+                                Github
+                            </a>
+                        </li>
+                        <li class="menu__item">
+                            <a href="{{ url_for('license') }}">
+                                <span class="fab fa-osi"></span>
+                                License
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -65,8 +110,11 @@
         </div>
     </footer>
 
-    <!-- Kube JS + jQuery are used for some functionality, but are not required for the basic setup -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js/kube.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fontawesome.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/clipboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block script %}{% endblock %}
 </body>
 </html>

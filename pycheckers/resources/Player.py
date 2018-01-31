@@ -6,3 +6,4 @@ class Player:
     positions = set()
     kings = set()
     pieces = len(positions)
+    pieces_with_captures = set()

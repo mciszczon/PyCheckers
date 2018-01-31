@@ -7,17 +7,42 @@
         <p>You can either try yourself with an AI on one of the three difficulty levels: easy, medium or hard.</p>
         <p>To play with a friend just start a new multiplayer game and send the generated link to your friend. When the other player opens the link, he will automatically be joined to your game and you can start your match.</p>
 
-        <div class="row gutters u-margin-top">
-            <div class="col col-6">
-                <a href="{{ url_for('start') }}" class="button large w100 u-text-center">
-                    <span class="inverted">Start a game</span>
-                </a>
+        {% if g.user.is_authenticated %}
+            <div class="row gutters u-margin-top">
+                <div class="col col-6">
+                    <a href="{{ url_for('start') }}" class="button large w100 u-text-center">
+                        <span class="inverted">
+                            <span class="fas fa-plus-square"></span>
+                            Start a game
+                        </span>
+                    </a>
+                </div>
+                <div class="col col-6">
+                    <a href="{{ url_for('active_games') }}" class="button large w100 u-text-center">
+                        <span class="fas fa-puzzle-piece"></span>
+                        <span class="inverted">See current games</span>
+                    </a>
+                </div>
             </div>
-            <div class="col col-6">
-                <a href="{{ url_for('active_games') }}" class="button large w100 u-text-center">
-                    <span class="inverted">See current games</span>
-                </a>
+        {% else %}
+            <div class="row gutters u-margin-top">
+                <div class="col col-6">
+                    <a href="{{ url_for('login') }}" class="button large w100 u-text-center">
+                        <span class="inverted">
+                            <span class="fas fa-sign-in-alt"></span>
+                            Login
+                        </span>
+                    </a>
+                </div>
+                <div class="col col-6">
+                    <a href="{{ url_for('register') }}" class="button large w100 u-text-center">
+                        <span class="inverted">
+                            <span class="fas fa-user-plus"></span>
+                            Register
+                        </span>
+                    </a>
+                </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock %}

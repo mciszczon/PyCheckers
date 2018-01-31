@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2>Login</h2>
+        <form method="post" action="{{ url_for('register') }}" class="form">
+            <div class="form-item">
+                <label class="large strong" for="username">
+                    Username
+                    <span class="req">*</span>
+                    {% if error and error['username-taken'] %}<span class="error">{{ error['username-taken'] }}</span>{% endif %}
+                </label>
+                <div class="prepend">
+                    <span>
+                        <span class="fas fa-user"></span>
+                    </span>
+                    <input class="big" type="text" name="username" id="username" {% if username %}value="{{ username }}"{% endif %}required>
+                </div>
+            </div>
+            <div class="form-item">
+                <label class="large strong" for="password">
+                    Password
+                    <span class="req">*</span>
+                    {% if error and error['password-short'] %}<span class="error">{{ error['password-short'] }}</span>{% endif %}
+                </label>
+                <div class="prepend">
+                    <span>
+                        <span class="fas fa-key"></span>
+                    </span>
+                    <input class="big" type="password" name="password" id="password" minlength="6" required>
+                </div>
+                <div class="desc">At least 6 characters long.</div>
+            </div>
+            <div class="form-item">
+                <label class="large strong" for="repeat-password">
+                    Repeat Password
+                    <span class="req">*</span>
+                    {% if error and error['password-different'] %}<span class="error">{{ error['password-different'] }}</span>{% endif %}
+                </label>
+                <div class="prepend">
+                    <span>
+                        <span class="fas fa-key"></span>
+                    </span>
+                    <input class="big" type="password" name="repeat-password" id="repeat-password" minlength="6" required>
+                </div>
+            </div>
+            <div class="form-item">
+                <button>Register</button>
+                <a class="button secondary outline" href="{{ url_for('index') }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

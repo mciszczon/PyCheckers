@@ -8,8 +8,23 @@
   margin: -1px; padding: 0; border: 0; 
 }
 
+.hidden {
+    display: none;
+}
+
 body {
     overflow-y: scroll;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.main {
+    display: flex;
+    position: relative;
+    flex: 2 0;
+    flex-direction: column;
+    justify-content: center;
 }
 
 a {
@@ -19,6 +34,7 @@ a {
 .container {
     padding-left: 5%;
     padding-right: 5%;
+    width: 100%;
     max-width: 60rem;
     margin-left: auto;
     margin-right: auto;
@@ -63,6 +79,93 @@ a {
     line-height: 1;
 }
 
+.label--game {
+    display: block;
+    width: auto;
+    width: auto;
+}
+
+/**
+ * Tooltip Styles
+ */
+
+/* Add this attribute to the element that needs a tooltip */
+[data-tooltip] {
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+/* Hide the tooltip content by default */
+[data-tooltip]:before,
+[data-tooltip]:after {
+    visibility: hidden;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Position tooltip above the element */
+[data-tooltip]:before {
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    margin-bottom: 5px;
+    margin-left: -80px;
+    padding: 7px;
+    width: 160px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background-color: #000;
+    background-color: hsla(0, 0%, 20%, 0.9);
+    color: #fff;
+    content: attr(data-tooltip);
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+/* Triangle hack to make tooltip look like a speech bubble */
+[data-tooltip]:after {
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -5px;
+    width: 0;
+    border-top: 5px solid #000;
+    border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
+}
+
+/* Show tooltip content on hover */
+[data-tooltip].active:before,
+[data-tooltip].active:after {
+    visibility: visible;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=100);
+    opacity: 1;
+}
+
+/* Messages */
+
+.messages-container {
+    position: absolute;
+    top: .75rem;
+    right: 0;
+    left: 0;
+    width: 100%;
+}
+
+.message p {
+    margin: 0;
+}
+
 /* Header */
 
 .header {
@@ -74,7 +177,8 @@ a {
     opacity: 0.6;
 }
 
-.header a:hover {
+.header a:hover,
+.header a:focus {
     opacity: 1;
 }
 
@@ -86,6 +190,12 @@ a {
     display: inline-block;
     margin: 0;
     font-size: 1.5rem;
+}
+
+.navbar__title a {
+    padding-left: 2.5rem;
+    background: transparent url('../img/crown_white.png') no-repeat left center;
+    background-size: 2rem;
 }
 
 .menu {
@@ -120,15 +230,18 @@ a {
     height: 100%;
     padding: 2rem;
     background: #edf2ff;
+    color: #4a4a4a;
 }
 
 .game:hover,
 .game:focus {
     background: #f8f8f8;
+    color: #000;
 }
 
 .game h3 {
     margin-top: 0.5rem;
+    margin-bottom: 0;
 }
 
 /* Board */
@@ -219,16 +332,8 @@ a.piece:focus,
 }
 
 .loses__lost {
-    display: inline-block;
-    margin: 0.125rem;
-}
-
-.loses__lost:first-child {
-    margin-left: 0;
-}
-
-.loses__lost:last-child {
-    margin-right: 0;
+    display: block;
+    margin: 0.125rem 0;
 }
 
 .lost-piece {
@@ -239,6 +344,7 @@ a.piece:focus,
 
 .loses--white .lost-piece {
     background: #999;
+    margin-left: auto;
 }
 
 .loses--black .lost-piece {
@@ -248,7 +354,8 @@ a.piece:focus,
 /* Footer */
 
 .footer {
-    color: #666;
+    background: #1c86f2;
+    color: #fff;
     font-size: 0.85rem;
 }
 
@@ -256,8 +363,23 @@ a.piece:focus,
     margin: 0;
 }
 
+.footer span {
+    opacity: 0.5;
+}
+
 .footer__more {
     text-align: right;
+}
+
+.footer a {
+    color: #fff;
+    opacity: 0.5;
+    font-weight: 700;
+}
+
+.footer a:hover,
+.footer a:focus {
+    opacity: 1;
 }
 
 @media screen and (min-width: 586px) {

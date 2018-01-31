@@ -1,71 +1,144 @@
 {% extends "base.html" %}
 {% block title %}Board demo{% endblock %}
 {% block content %}
-        <div class="container">
-            <h2>{{ name|escape }}</h2>
+        <div class="container container--wide">
 
-            <div class="message" data-component="message">
-                {% if turn == 0 %}Black's{% elif turn == 1%}White's{% endif %} turn.
-            </div>
+            <div class="row gutters">
 
-            <table class="board unstyled">
-                {% for row in board.rows %}
-                    <tr id="row-{{ row }}">
-                    {% for column in board.columns %}
-                        <td id="box-{{ row }},{{ column }}">
-                            {% if (row, column) in player_white.positions %}
-                                {% if turn == 1 %}
-                                    <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
-                                {% elif turn == 0 %}
-                                    <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
-                                {% endif %}
-                            {% elif (row, column) in player_black.positions %}
-                                {% if turn == 0 %}
-                                    <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
-                                {% elif turn == 1 %}
-                                    <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
-                                {% endif %}
-                            {% elif rule == '/game/<string:game_id>/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
-                                {% if (row is even and column is odd) or (row is odd and column is even) %}
-                                    <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
-                                {% endif %}
+                <div class="col col-8">
+                    <table class="board unstyled">
+                        {% for row in board.rows %}
+                            <tr id="row-{{ row }}">
+                            {% for column in board.columns %}
+                                <td id="box-{{ row }},{{ column }}">
+                                    {% if (row, column) in player_white.positions %}
+                                        {% if guest and turn == guest.id and g.user.id == guest.id %}
+                                            <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
+                                        {% else %}
+                                            <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
+                                        {% endif %}
+                                    {% elif (row, column) in player_black.positions %}
+                                        {% if guest and turn == g.user.id and g.user.id == creator.id %}
+                                            <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
+                                        {% else %}
+                                            <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
+                                        {% endif %}
+                                    {% elif rule == '/game/<string:game_id>/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
+                                        {% if (row is even and column is odd) or (row is odd and column is even) %}
+                                            <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <div class="col col-4">
+                    <span class="label focus">{% if private %}Private{% else %}Public{% endif %} Game</span>
+                    <h2>{{ name|escape }}</h2>
+
+                    <span class="label label--game tag big {% if turn == creator.id %}black{% endif %}">
+                        {% if turn == creator.id %}
+                            {{ creator.username }}'s
+                        {% else %}
+                            {{ guest.username }}'s
+                        {% endif %}
+                        turn
+                    </span>
+                    <span class="label label--game tag big focus">Round no. {{ round }}</span>
+
+                    {% if not guest %}
+                        <div class="u-margin-top">
+                            {% if g.user.id != creator.id %}
+                                <a href="{{ url_for('join', game_id = game_id) }}" class="button large w100 u-text-center">You can join this game as White Player</a>
+                            {% elif g.user.id == creator.id and private %}
+                                <p>Send this link to the person that you want to play with.</p>
+                                <div class="append">
+                                    <label for="copy-url-input" class="visuallyhidden">Invitation link</label>
+                                    <input id="copy-url-input" type="url" value="{{ url }}">
+                                    <button id="copy-url-button" class="button tooltip-bottom" data-clipboard-target="#copy-url-input">
+                                        <span class="fas fa-clipboard"></span>
+                                    </button>
+                                </div>
                             {% endif %}
-                        </td>
-                    {% endfor %}
-                    </tr>
-                {% endfor %}
-            </table>
-            
-            <div class="row gutters between u-margin-top">
-                <div class="col col-6">
-                    <h3>White loses</h3>
-                    {% if player_white.pieces < 12 %}
-                        <ul class="loses loses--white">
-                            {% for piece in range(player_white.pieces, 12) %}
-                                <li class="loses__lost">
-                                    <div class="lost-piece"></div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No loses!</p>
+                        </div>
                     {% endif %}
+
+                    <h3 class="u-margin-top">Game statistics</h3>
+                    <div class="row gutters between">
+                        <div class="col col-6">
+                            <span class="label black">Black</span>
+                            <h4>{{ creator.username }}</h4>
+                            {% if player_black.pieces < 12 %}
+                                <ul class="loses loses--black">
+                                    {% for piece in range(player_black.pieces, 12) %}
+                                        <li class="loses__lost">
+                                            <div class="lost-piece"></div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No loses!</p>
+                            {% endif %}
+                        </div>
+                        <div class="col col-6 u-text-right">
+                            <span class="label">White</span>
+                            <h4>
+                                {% if guest %}
+                                    {{ guest.username }}
+                                {% else %}
+                                    No player, yet.
+                                {% endif %}
+                            </h4>
+                            {% if player_white.pieces < 12 %}
+                                <ul class="loses loses--white">
+                                    {% for piece in range(player_white.pieces, 12) %}
+                                        <li class="loses__lost">
+                                            <div class="lost-piece"></div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No loses!</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="col col-6 u-text-right">
-                    <h3>Black loses</h3>
-                    {% if player_black.pieces < 12 %}
-                        <ul class="loses loses--black">
-                            {% for piece in range(player_black.pieces, 12) %}
-                                <li class="loses__lost">
-                                    <div class="lost-piece"></div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p>No loses!</p>
-                    {% endif %}
-                </div>
+
             </div>
             
         </div>
+{% endblock %}
+{% block script %}
+    <input class="hidden" aria-hidden="true" value="{{ game_id }}" id="game_id">
+    <script>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        // Force refresh
+        var local_timestamp = 0;
+        var game_id = $('input[id="game_id"]').val()
+
+        $(function() {
+            $.getJSON($SCRIPT_ROOT + '/_check_timestamp', {
+                game_id: game_id
+            }, function(data) {
+                local_timestamp = data.timestamp;
+                console.log('Fetched initial game timestamp at ' + new Date($.now()));
+            });
+            (function check() {
+                setTimeout(function () {
+                    console.log('Checked the timestamp at ' + new Date($.now()));
+                    $.getJSON($SCRIPT_ROOT + '/_check_timestamp', {
+                        game_id: game_id
+                    }, function (data) {
+                        if (data.timestamp > local_timestamp) {
+                            location.reload();
+                        }
+                    });
+                    check();
+                }, 10000);  // This may bloat the server heavily :/
+            })();
+        });
+    </script>
 {% endblock %}

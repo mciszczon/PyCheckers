@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div class="container">
+        {{ user }}
+        <h2>Login</h2>
+        <form method="post" action="{{ url_for('login') }}" class="form">
+            <div class="row gutters">
+                <div class="col col-6">
+                    <div class="form-item">
+                        <label for="username" class="large strong">Username <span class="req">*</span></label>
+                        <div class="prepend">
+                            <span>
+                                <span class="fas fa-user"></span>
+                            </span>
+                            <input class="big" type="text" name="username" id="username" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col-6">
+                    <div class="form-item">
+                        <label for="password" class="large strong">Password <span class="req">*</span></label>
+                        <div class="prepend">
+                            <span>
+                                <span class="fas fa-unlock-alt"></span>
+                            </span>
+                            <input class="big" type="password" name="password" id="password" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-item form-checkboxes">
+                <label class="checkbox"><input type="checkbox" name="remember_me" value="yes"> Remember me</label>
+            </div>
+            <div class="form-item">
+                <button>Login</button>
+                <a class="button secondary outline" href="{{ url_for('index') }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

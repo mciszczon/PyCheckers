@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Active games{% endblock %}
+{% block title %}{{ user.username }}'s profile{% endblock %}
 {% block content %}
     <div class="container">
         <h2>
-            <span class="fas fa-puzzle-piece"></span>
-            Active games
+            <span class="fas fa-user"></span>
+            {{ user.username }}
         </h2>
-        <p class="large">Below you can see a list of all active games.</p>
+        <h3>Your games</h3>
         {% if games %}
             <div class="row gutters">
             {% for game in games %}
@@ -17,14 +17,13 @@
                         {% else %}
                             <span class="label focus">Human vs. computer</span>
                         {% endif %}
-                        <h3>{{ games[game].name }}</h3>
-                        <p>Created by {{ users[games[game].creator].username }}</p>
+                        <h4>{{ games[game].name }}</h4>
                     </a>
                 </div>
             {% endfor %}
             </div>
         {% else %}
-            <p>No games currently. Why don't you <a href="{{ url_for('start') }}">start one</a>?</p>
+            <p>You've got no games running! Why don't you <a href="{{ url_for('start') }}">start one</a>?</p>
         {% endif %}
     </div>
 {% endblock %}
