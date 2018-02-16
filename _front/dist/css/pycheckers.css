@@ -29,6 +29,7 @@ body {
 
 a {
     text-decoration: none;
+    transition: all .1s;
 }
 
 .container {
@@ -81,7 +82,6 @@ a {
 
 .label--game {
     display: block;
-    width: auto;
     width: auto;
 }
 
@@ -271,16 +271,19 @@ a {
     display: block;
     width: 60%;
     height: 60%;
-    border-radius:50%;
+    background: #1c86f2;
+    border-radius: 50%;
 }
 
 .box.box--moveable:hover,
 .box-.box--moveable:focus {
-    background: #3794de;
+    background: #f03c69;
 }
 
 .piece {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 1.5rem;
     height: 1.5rem;
     position: absolute;
@@ -289,14 +292,21 @@ a {
     margin-top: -0.75rem;
     margin-left: -0.75rem;
     border-radius: 50%;
+    font-size: 1.125rem;
+}
+
+a.piece.player2 {
+    color: #000;
+}
+
+a.piece.player1 {
+    color: #fff;
 }
 
 a.piece:hover,
 a.piece:focus,
 .piece--selected {
-    -webkit-box-shadow: 0 0 10px 5px #3794de;
-    -moz-box-shadow: 0 0 10px 5px #3794de;
-    box-shadow: 0 0 10px 5px #3794de;
+    box-shadow: 0 0 10px 5px #1c86f2;
 }
 
 .piece--man {
@@ -388,6 +398,7 @@ a.piece:focus,
         height: 2.5rem;
         margin-top: -1.25rem;
         margin-left: -1.25rem;
+        font-size: 2rem;
     }
 }
 
@@ -398,6 +409,7 @@ a.piece:focus,
         height: 3.25rem;
         margin-left: -1.625rem;
         margin-top: -1.625rem;
+        font-size: 2.75rem;
     }
     
     .piece--king {
@@ -408,11 +420,13 @@ a.piece:focus,
 }
 
 @media screen and (min-width: 980px) {
+
     .piece {
         width: 4rem;
         height: 4rem;
         margin-top: -2rem;
         margin-left: -2rem;
+        font-size: 3.5rem;
     }
     
     .loses__lost {

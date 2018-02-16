@@ -2,7 +2,8 @@
 This is Views module.
 It allows Flask to run properly, as it stores its routing and template rendering settings.
 """
-import math
+import os
+import pickle
 import uuid
 from datetime import date
 from pycheckers import app, db, bcrypt, login_manager
@@ -130,8 +131,10 @@ def start():
                 private = True
 
             game_id = str(uuid.uuid4())
-            games[game_id] = (Game(name, gametype, private, creator))
+            games[game_id] = (Game(game_id, name, gametype, private, creator))
             flash('Game started!', 'success')
+            if not games[game_id].save_game():
+                flash('Error occurred while saving the game!', 'error')
             return redirect(url_for('game', game_id=game_id))
     return render_template('start.html')
 
@@ -176,6 +179,8 @@ def join(game_id):
             games[game_id].set_guest(current_user.id)
             flash('You have joined this game and play as White Player!', 'success')
             games[game_id].save_timestamp()
+            if not games[game_id].save_game():
+                flash('Error occurred while saving the game!', 'error')
             return redirect(url_for('game', game_id=game_id))
         # There is a guest, or no guest and current_user is creator. Not OK to join.
         elif games[game_id].guest is True or current_user.id == games[game_id].creator:
@@ -277,12 +282,8 @@ def move(game_id, coordinate_x, coordinate_y, to_x, to_y):
         # Check whether there are pieces to turn into kings
         if games[game_id].add_kings():
             flash('A King crowned!', 'black')
-        else:
-            games[game_id].update_possible_captures()
-            if games[game_id].turn == games[game_id].creator and not len(games[game_id].player_black.pieces_with_captures):
-                games[game_id].change_turn()
-            elif games[game_id].turn == games[game_id].guest and not len(games[game_id].player_white.pieces_with_captures):
-                games[game_id].change_turn()
+        if not games[game_id].save_game():
+            flash('Error occurred while saving the game!', 'error')
     else:
         flash('This move is invalid!', 'error')
         return redirect(url_for('select', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y))
@@ -341,7 +342,8 @@ def inject_variables():
             turn=games[game_id].turn,
             round=games[game_id].round,
             creator=User.query.filter_by(id=games[game_id].creator).first(),
-            guest=User.query.filter_by(id=games[game_id].guest).first()
+            guest=User.query.filter_by(id=games[game_id].guest).first(),
+            game=games[game_id]
         )
     else:
         return dict(

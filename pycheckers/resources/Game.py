@@ -1,3 +1,4 @@
+import pickle
 from time import time
 from math import fabs
 from .Board import Board
@@ -9,7 +10,7 @@ class Game:
     """
 
     """
-    def __init__(self, name, gametype, private, creator):
+    def __init__(self, game_id, name, gametype, private, creator):
         """
         Game class constructor.
         :param string name: A name for the new game
@@ -17,8 +18,10 @@ class Game:
         :param string private: Either 'private' or 'public'
         :param int creator: ID of the user who created the game
         """
+        self.game_id = game_id
         self.name = name
         self.gametype = gametype
+        self.timestamp = 0
         self.private = private
         self.creator = creator
         self.guest = False
@@ -30,6 +33,15 @@ class Game:
         self.columns = self.board.get_columns()
         self.player_black = PlayerBlack()
         self.player_white = PlayerWhite()
+        self.update_possible_moves()
+        self.update_possible_captures()
+
+    def save_game(self):
+        try:
+            pickle.dump(self, open('games/' + self.game_id + '.p', 'wb'))
+            return True
+        except:
+            return False
 
     def change_turn(self):
         """
@@ -86,17 +98,26 @@ class Game:
     def check_select(self, coordinate_x, coordinate_y, current_user_id):
         """
         This function checks whether a selected piece belongs to a player who's turn it is.
+        It also makes sure that player can only choose a piece that has available capture (if there is a such).
         :param int coordinate_x: X coordinate of the selected piece.
         :param int coordinate_y: Y coordinate of the selected piece.
         :param int current_user_id: ID of the user that tries to make the selection.
         :return boolean: Return True if the selection is valid and allowed.
         """
-        if self.turn == self.creator and self.creator == current_user_id \
-                and (coordinate_x, coordinate_y) in self.player_black.positions:
-            return True
-        if self.turn == self.guest and self.guest == current_user_id \
-                and (coordinate_x, coordinate_y) in self.player_white.positions:
-            return True
+        if self.turn == self.creator and self.creator == current_user_id:
+            if (coordinate_x, coordinate_y) in self.player_black.positions:
+                if not self.player_black.pieces_with_moves or \
+                        (coordinate_x, coordinate_y) in self.player_black.pieces_with_moves \
+                        or not self.player_black.pieces_with_captures or \
+                        (coordinate_x, coordinate_y) in self.player_black.pieces_with_captures:
+                    return True
+        if self.turn == self.guest and self.guest == current_user_id:
+            if (coordinate_x, coordinate_y) in self.player_white.positions:
+                if not self.player_white.pieces_with_moves or \
+                        (coordinate_x, coordinate_y) in self.player_white.pieces_with_moves \
+                        or not self.player_white.pieces_with_captures or \
+                        (coordinate_x, coordinate_y) in self.player_white.pieces_with_captures:
+                    return True
 
         return False
 
@@ -126,10 +147,10 @@ class Game:
         Otherwise it'll return `no-win'.
         :return string: A string indicating the status: 'win-black' | 'win-white' | 'no-win'
         """
-        if not self.player_black.pieces:
-            return 'win-black'
-        elif not self.player_white.pieces:
+        if not self.player_black.pieces or not self.player_black.pieces_with_moves:
             return 'win-white'
+        elif not self.player_white.pieces or not self.player_white.pieces_with_moves:
+            return 'win-black'
 
         return 'no-win'
 
@@ -147,10 +168,19 @@ class Game:
         """
         # Black Player
         if self.turn == self.creator and (coordinate_x, coordinate_y) in self.player_black.positions:
-            return self.move(coordinate_x, coordinate_y, to_x, to_y)
+            if self.move(coordinate_x, coordinate_y, to_x, to_y):
+                self.update_possible_captures()
+                self.add_kings()
+                self.update_possible_moves()
+                return True
         # White Player
         elif self.turn == self.guest and (coordinate_x, coordinate_y) in self.player_white.positions:
-            return self.move(coordinate_x, coordinate_y, to_x, to_y)
+            if self.move(coordinate_x, coordinate_y, to_x, to_y):
+                self.update_possible_captures()
+                self.add_kings()
+                self.update_possible_moves()
+                return True
+        return False
 
     def move(self, coordinate_x, coordinate_y, to_x, to_y):
         """
@@ -172,22 +202,28 @@ class Game:
         # 1. If by one square, it's okay
         if fabs(coordinate_x - to_x) <= 1 and fabs(coordinate_y - to_y) <= 1:
             if self.turn == self.creator:  # Black Turn
-                if (to_x, to_y) not in self.player_white.positions:
+                if (coordinate_x, coordinate_y) in self.player_black.pieces_with_captures:
+                    return False
+                if (to_x, to_y) not in self.player_white.positions and (to_x, to_y) not in self.player_black.positions:
                     self.player_black.positions.remove((coordinate_x, coordinate_y))
                     self.player_black.positions.add((to_x, to_y))
                     if (coordinate_x, coordinate_y) in self.player_black.kings:
                         self.player_black.kings.remove((coordinate_x, coordinate_y))
                         self.player_black.kings.add((to_x, to_y))
+                    self.change_turn()
                     return True
                 else:
                     return False
             elif self.turn == self.guest:  # White Turn
-                if (to_x, to_y) not in self.player_black.positions:
+                if (coordinate_x, coordinate_y) in self.player_white.pieces_with_captures:
+                    return False
+                if (to_x, to_y) not in self.player_black.positions and (to_x, to_y) not in self.player_white.positions:
                     self.player_white.positions.remove((coordinate_x, coordinate_y))
                     self.player_white.positions.add((to_x, to_y))
                     if (coordinate_x, coordinate_y) in self.player_white.kings:
                         self.player_white.kings.remove((coordinate_x, coordinate_y))
                         self.player_white.kings.add((to_x, to_y))
+                    self.change_turn()
                     return True
                 else:
                     return False
@@ -213,88 +249,178 @@ class Game:
         """
         med_x = (coordinate_x + to_x) / 2
         med_y = (coordinate_y + to_y) / 2
-        if (med_x, med_y) in self.player_white.positions:
-            self.player_black.positions.remove((coordinate_x, coordinate_y))
-            self.player_black.positions.add((to_x, to_y))
-            if (coordinate_x, coordinate_y) in self.player_black.kings:
-                self.player_black.kings.remove((coordinate_x, coordinate_y))
-                self.player_black.kings.add((to_x, to_y))
-            self.player_white.positions.remove((med_x, med_y))
-            self.player_white.pieces -= 1
-            if (med_x, med_y) in self.player_white.kings:
-                self.player_white.kings.remove((med_x, med_y))
-            # If a King is crowned after the move, end the turn immediately.
-            if self.add_kings():
-                self.change_turn()
+        if self.turn == self.creator and (med_x, med_y) in self.player_white.positions:
+            if (self.player_black.pieces_with_captures and (coordinate_x, coordinate_y) in self.player_black.pieces_with_captures
+                    and (to_x, to_y) in self.player_black.pieces_with_captures.get((coordinate_x, coordinate_y))) \
+                    or not self.player_black.pieces_with_captures:
+                self.player_black.positions.remove((coordinate_x, coordinate_y))
+                self.player_black.positions.add((to_x, to_y))
+                if (coordinate_x, coordinate_y) in self.player_black.kings:
+                    self.player_black.kings.remove((coordinate_x, coordinate_y))
+                    self.player_black.kings.add((to_x, to_y))
+                self.player_white.positions.remove((med_x, med_y))
+                self.player_white.pieces -= 1
+                if (med_x, med_y) in self.player_white.kings:
+                    self.player_white.kings.remove((med_x, med_y))
+            # Update possible captures
+            self.update_possible_captures()
+            # Check if the moved piece will be able to capture again
+            if (to_x, to_y) in self.player_black.pieces_with_captures:
+                self.update_possible_captures((to_x, to_y))
             else:
-                # Update possible captures
-                self.update_possible_captures()
-                # Check if the moved piece will be able to capture again
-                if (to_x, to_y) not in self.player_white.pieces_with_captures:
-                    self.change_turn()
+                self.change_turn()
+
             return True
-        elif (med_x, med_y) in self.player_black.positions:
-            self.player_white.positions.remove((coordinate_x, coordinate_y))
-            self.player_white.positions.add((to_x, to_y))
-            if (coordinate_x, coordinate_y) in self.player_white.kings:
-                self.player_white.kings.remove((coordinate_x, coordinate_y))
-                self.player_white.kings.add((to_x, to_y))
-            self.player_black.positions.remove((med_x, med_y))
-            self.player_black.pieces -= 1
-            if (med_x, med_y) in self.player_black.kings:
-                self.player_black.kings.remove((med_x, med_y))
-            # If a King is crowned after the move, end the turn immediately.
-            if self.add_kings():
-                self.change_turn()
+        elif self.turn == self.guest and (med_x, med_y) in self.player_black.positions:
+            if (self.player_white.pieces_with_captures and (coordinate_x, coordinate_y) in self.player_white.pieces_with_captures) \
+                    and (to_x, to_y) in self.player_white.pieces_with_captures.get((coordinate_x, coordinate_y)) \
+                    or not self.player_white.pieces_with_captures:
+                self.player_white.positions.remove((coordinate_x, coordinate_y))
+                self.player_white.positions.add((to_x, to_y))
+                if (coordinate_x, coordinate_y) in self.player_white.kings:
+                    self.player_white.kings.remove((coordinate_x, coordinate_y))
+                    self.player_white.kings.add((to_x, to_y))
+                self.player_black.positions.remove((med_x, med_y))
+                self.player_black.pieces -= 1
+                if (med_x, med_y) in self.player_black.kings:
+                    self.player_black.kings.remove((med_x, med_y))
+            # Update possible captures
+            self.update_possible_captures()
+            # Check if the moved piece will be able to capture again
+            if (to_x, to_y) in self.player_white.pieces_with_captures:
+                self.update_possible_captures((to_x, to_y))
             else:
-                # Update possible captures
-                self.update_possible_captures()
-                # Check if the moved piece will be able to capture again
-                if (to_x, to_y) not in self.player_black.pieces_with_captures:
-                    self.change_turn()
+                self.change_turn()
             return True
 
         return False
 
-    def update_possible_captures(self):
-        if self.turn == self.creator:
-            for piece in self.player_black.positions:
-                if self.check_possible_captures(piece[0], piece[1]):
-                    self.player_black.pieces_with_captures.add(piece)
-        elif self.turn == self.guest:
-            for piece in self.player_white.positions:
-                if self.check_possible_captures(piece[0], piece[1]):
-                    self.player_white.pieces_with_captures.add(piece)
+    def update_possible_captures(self, first_capture = None):
+        """
 
-    def check_possible_captures(self, coordinate_x, coordinate_y):
+        :param first_capture:
+        :return:
+        """
+        self.player_black.pieces_with_captures = dict()
+        self.player_white.pieces_with_captures = dict()
+
+        if first_capture:
+            if first_capture in self.player_black.positions:
+                possible_captures = self.check_possible_captures('black', first_capture[0], first_capture[1])
+                if possible_captures:
+                    self.player_black.pieces_with_captures[first_capture] = possible_captures
+            elif first_capture in self.player_white.positions:
+                possible_captures = self.check_possible_captures('white', first_capture[0], first_capture[1])
+                if possible_captures:
+                    self.player_white.pieces_with_captures[first_capture] = possible_captures
+        else:
+            for piece in self.player_black.positions:
+                possible_captures = self.check_possible_captures('black', piece[0], piece[1])
+                if possible_captures:
+                    self.player_black.pieces_with_captures[piece] = possible_captures
+
+            for piece in self.player_white.positions:
+                possible_captures = self.check_possible_captures('white', piece[0], piece[1])
+                if possible_captures:
+                    self.player_white.pieces_with_captures[piece] = possible_captures
+        return True
+
+    def check_possible_captures(self, player, coordinate_x, coordinate_y):
+        """
+
+        :param player:
+        :param coordinate_x:
+        :param coordinate_y:
+        :return:
+        """
         targets = [
-            ((coordinate_x + coordinate_x + 2), (coordinate_y + coordinate_y + 2)),
-            ((coordinate_x + coordinate_x + 2), (coordinate_y + coordinate_y - 2)),
-            ((coordinate_x + coordinate_x - 2), (coordinate_y + coordinate_y + 2)),
-            ((coordinate_x + coordinate_x - 2), (coordinate_y + coordinate_y - 2))
+            ((coordinate_x + 2), (coordinate_y + 2)),
+            ((coordinate_x + 2), (coordinate_y - 2)),
+            ((coordinate_x - 2), (coordinate_y + 2)),
+            ((coordinate_x - 2), (coordinate_y - 2))
         ]
         mids = [
-            ((coordinate_x + coordinate_x + 2) / 2, (coordinate_y + coordinate_y + 2) / 2),
-            ((coordinate_x + coordinate_x + 2) / 2, (coordinate_y + coordinate_y - 2) / 2),
-            ((coordinate_x + coordinate_x - 2) / 2, (coordinate_y + coordinate_y + 2) / 2),
-            ((coordinate_x + coordinate_x - 2) / 2, (coordinate_y + coordinate_y - 2) / 2)
+            ((coordinate_x + targets[0][0]) // 2, (coordinate_y + targets[0][1]) // 2),
+            ((coordinate_x + targets[1][0]) // 2, (coordinate_y + targets[1][1]) // 2),
+            ((coordinate_x + targets[2][0]) // 2, (coordinate_y + targets[2][1]) // 2),
+            ((coordinate_x + targets[3][0]) // 2, (coordinate_y + targets[3][1]) // 2)
         ]
 
+        valid_targets = list()
+
         for i in range(len(targets)):
-            if self.turn == self.creator:
-                if mids[i] in self.player_white.positions:
-                    # If the target square is already occupied, then it doesn't matter
-                    if targets[i] in self.player_white.positions or targets[i] in self.player_black.positions \
-                            or targets[i][0] not in self.board.get_rows() or targets[i][1] not in self.board.get_columns():
-                        return False
-                    else:
-                        return True
-            elif self.turn == self.guest:
-                if mids[i] in self.player_black.positions:
-                    # If the target square is already occupied, then it doesn't matter
-                    if targets[i] in self.player_white.positions or targets[i] in self.player_black.positions \
-                            or targets[i][0] not in self.board.get_rows() or targets[i][1] not in self.board.get_columns():
-                        return False
-                    else:
-                        return True
+            if targets[i][0] in self.board.get_rows() and targets[i][1] in self.board.get_columns():
+                if targets[i] not in self.player_black.positions and targets[i] not in self.player_white.positions:
+                    if player == 'black':
+                        if targets[i][0] < coordinate_x or \
+                                (targets[i][0] > coordinate_x and (coordinate_x, coordinate_y) in self.player_black.kings):
+                            if mids[i] in self.player_white.positions:
+                                valid_targets.append(targets[i])
+                    elif player == 'white':
+                        if targets[i][0] > coordinate_x or \
+                                (targets[i][0] < coordinate_x and (coordinate_x, coordinate_y) in self.player_white.kings):
+                            if mids[i] in self.player_black.positions:
+                                valid_targets.append(targets[i])
+        if not valid_targets:
+            return False
+        return valid_targets
+
+    def update_possible_moves(self):
+        """
+        Iterate player's pieces and fill the dictionary with all the possible moves.
+        :return boolean:
+        """
+        self.player_black.pieces_with_moves = dict()
+        self.player_white.pieces_with_moves = dict()
+
+        for piece in self.player_black.positions:
+            possible_moves = self.check_possible_moves(piece[0], piece[1])
+            if possible_moves:
+                self.player_black.pieces_with_moves[piece] = possible_moves
+
+        for piece in self.player_white.positions:
+            possible_moves = self.check_possible_moves(piece[0], piece[1])
+            if possible_moves:
+                self.player_white.pieces_with_moves[piece] = possible_moves
+
+        return True
+
+    def check_possible_moves(self, coordinate_x, coordinate_y):
+        """
+
+        :param int coordinate_x:
+        :param int coordinate_y:
+        :return boolean|array: Either False or valid_targets array.
+        """
+        targets_plus_x = [
+            ((coordinate_x + 1), (coordinate_y + 1)),
+            ((coordinate_x + 1), (coordinate_y - 1))
+        ]
+        targets_minus_x = [
+            ((coordinate_x - 1), (coordinate_y + 1)),
+            ((coordinate_x - 1), (coordinate_y - 1))
+        ]
+
+        if (coordinate_x, coordinate_y) in self.player_black.positions:
+            if (coordinate_x, coordinate_y) in self.player_black.kings:
+                targets = targets_plus_x + targets_minus_x
+            else:
+                targets = targets_minus_x
+        elif (coordinate_x, coordinate_y) in self.player_white.positions:
+            if (coordinate_x, coordinate_y) in self.player_white.kings:
+                targets = targets_plus_x + targets_minus_x
+            else:
+                targets = targets_plus_x
+        else:
+            targets = []
+
+        valid_targets = []
+
+        for i in range(len(targets)):
+            if targets[i][0] in self.board.get_rows() and targets[i][1] in self.board.get_columns():
+                if targets[i] not in self.player_black.positions and targets[i] not in self.player_white.positions:
+                    valid_targets.append(targets[i])
+
+        if valid_targets:
+            return valid_targets
         return False

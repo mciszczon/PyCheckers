@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Board demo{% endblock %}
+{% block title %}{{ name|escape }} game{% endblock %}
 {% block content %}
         <div class="container container--wide">
 
@@ -13,19 +13,63 @@
                                 <td id="box-{{ row }},{{ column }}">
                                     {% if (row, column) in player_white.positions %}
                                         {% if guest and turn == guest.id and g.user.id == guest.id %}
-                                            <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
+                                            {% if
+                                                not player_white.pieces_with_captures
+                                                and (row, column) in player_white.pieces_with_moves
+                                                or player_white.pieces_with_captures
+                                                and (row, column) in player_white.pieces_with_captures
+                                            %}
+                                                <a class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}">
+                                                    <span class="far fa-circle"></span>
+                                                </a>
+                                            {% else %}
+                                                <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
+                                            {% endif %}
                                         {% else %}
                                             <div class="player2 piece {% if (row, column) in player_white.kings %}piece--king{% endif %}"></div>
                                         {% endif %}
                                     {% elif (row, column) in player_black.positions %}
                                         {% if guest and turn == g.user.id and g.user.id == creator.id %}
-                                            <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}"></a>
+                                            {% if
+                                                not player_black.pieces_with_captures
+                                                and (row, column) in player_black.pieces_with_moves
+                                                or player_black.pieces_with_captures
+                                                and (row, column) in player_black.pieces_with_captures
+                                            %}
+                                                <a class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %} {% if row == coordinate_x and column == coordinate_y %}piece--selected{% endif %}" href="{{ url_for('select', game_id=game_id, coordinate_x=row, coordinate_y=column) }}">
+                                                    <span class="far fa-circle"></span>
+                                                </a>
+                                            {% else %}
+                                                <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
+                                            {% endif %}
                                         {% else %}
                                             <div class="player1 piece {% if (row, column) in player_black.kings %}piece--king{% endif %}"></div>
                                         {% endif %}
                                     {% elif rule == '/game/<string:game_id>/select/<int:coordinate_x>/<int:coordinate_y>' and (row, column) not in player_white.positions and (row, column) not in player_black.positions %}
                                         {% if (row is even and column is odd) or (row is odd and column is even) %}
-                                            <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                            {% if
+                                                turn == creator.id and creator.id == g.user.id
+                                                and (
+                                                    player_black.pieces_with_moves.get((coordinate_x, coordinate_y))
+                                                    and not player_black.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                    and (row, column) in player_black.pieces_with_moves.get((coordinate_x, coordinate_y))
+                                                    or player_black.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                    and (row, column) in player_black.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                )
+                                            %}
+                                                <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                            {% elif
+                                                turn == guest.id and guest.id == g.user.id
+                                                and (
+                                                    player_white.pieces_with_moves.get((coordinate_x, coordinate_y))
+                                                    and not player_white.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                    and (row, column) in player_white.pieces_with_moves.get((coordinate_x, coordinate_y))
+                                                    or player_white.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                    and (row, column) in player_white.pieces_with_captures.get((coordinate_x, coordinate_y))
+                                                )
+                                            %}
+                                                <a class="box box--moveable" href="{{ url_for('move', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y, to_x=row, to_y=column) }}"></a>
+                                            {% endif %}
                                         {% endif %}
                                     {% endif %}
                                 </td>
@@ -108,6 +152,21 @@
                 </div>
 
             </div>
+
+
+            <h2>White</h2>
+            <pre><code>
+                Moves:         {{ player_white.pieces_with_moves }}
+                Captures:      {{ player_white.pieces_with_captures }}
+                Kings:         {{ player_white.kings }}
+            </code></pre>
+
+            <h2>Black</h2>
+            <pre><code>
+                Moves:         {{ player_black.pieces_with_moves }}
+                Captures:      {{ player_black.pieces_with_captures }}
+                Kings:         {{ player_black.kings }}
+            </code></pre>
             
         </div>
 {% endblock %}
@@ -137,7 +196,7 @@
                         }
                     });
                     check();
-                }, 10000);  // This may bloat the server heavily :/
+                }, 2000);  // This may bloat the server heavily :/
             })();
         });
     </script>

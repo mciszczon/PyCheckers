@@ -14,4 +14,5 @@ class PlayerWhite(Player.Player):
         }
         self.kings = set()
         self.pieces = len(self.positions)
-        self.pieces_with_captures = set()
+        self.pieces_with_captures = dict()
+        self.pieces_with_moves = dict()
