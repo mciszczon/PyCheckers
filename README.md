@@ -24,6 +24,12 @@ Then we will create a very simple base application with Flask, so that next time
 In third part I have created some base Classes for the game, and using those classes I was able to generate a dynamic chessboard.
 Then I allowed user to select black or white piece—determined by turn.
 
+### [#4 — Moves and captures, multiple games, refractoring the code](https://steemit.com/utopian-io/@mciszczon/en-pycheckers-3-moves-and-captures-multiple-games-refractoring-the-code)
+
+Here I took care of a basic refractorization of the code, so that it's easier to maintain in the future. Also, multiple games can now be started and be played simultaneously.
+About the game itself, I have allowed pieces to be moved along the board and then implemented captures.
+This means that PyCheckers now have the very basic game mechanisms ready: selecting, moving, capturing.
+
 ---
 
 _More posts coming soon._
