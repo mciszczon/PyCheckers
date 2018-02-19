@@ -2,8 +2,6 @@
 This is Views module.
 It allows Flask to run properly, as it stores its routing and template rendering settings.
 """
-import os
-import pickle
 import uuid
 from datetime import date
 from pycheckers import app, db, bcrypt, login_manager
@@ -109,11 +107,18 @@ def register():
 @login_required
 def profile():
     user_games = dict()
+
     for single_game in games:
-        if current_user.id in (games[single_game].creator, games[single_game].guest):
+        if current_user.id in (games[single_game].creator, games[single_game].guest) and not games[single_game].finished:
             user_games[single_game] = games[single_game]
 
-    return render_template('profile.html', user=current_user, games=user_games)
+    past_games = dict()
+
+    for single_game in games:
+        if current_user.id in (games[single_game].creator, games[single_game].guest) and games[single_game].finished is not None:
+            past_games[single_game] = games[single_game]
+
+    return render_template('profile.html', user=current_user, games=user_games, past_games=past_games)
 
 
 @app.route('/new-game', methods=['POST', 'GET'])
@@ -143,11 +148,13 @@ def start():
 @login_required
 def active_games():
     public_games = dict()
+
     for single_game in games:
-        if games[single_game].private is False:
+        if games[single_game].private is False and not games[single_game].finished:
             public_games[single_game] = games[single_game]
 
     users_with_games = dict()
+
     for single_game in public_games:
         users_with_games[public_games[single_game].creator] = User.query.get(public_games[single_game].creator)
     return render_template('games.html', games=public_games, users=users_with_games)
@@ -166,6 +173,8 @@ def game(game_id):
     if not check_for_access(games[game_id], current_user.id):
         flash('You have no access to this game.', 'error')
         return redirect(url_for('active_games'))
+
+    games[game_id].check_status()
 
     return render_template('board.html', game_id=game_id)
 
@@ -194,6 +203,21 @@ def join(game_id):
         flash('Such a game does not exist. It might have ended.', 'error')
         return redirect(url_for('index'))
 
+
+@app.route('/game/<string:game_id>/debug/<int:coordinate_x>/<int:coordinate_y>/<int:to_x>/<int:to_y>')
+@login_required
+def debug(game_id, coordinate_x, coordinate_y, to_x, to_y):
+    if (coordinate_x, coordinate_y) in games[game_id].player_black.positions:
+        games[game_id].player_black.positions.remove((coordinate_x, coordinate_y))
+        games[game_id].player_black.positions.add((to_x, to_y))
+        games[game_id].update_possible_moves()
+    elif (coordinate_x, coordinate_y) in games[game_id].player_white.positions:
+        games[game_id].player_white.positions.remove((coordinate_x, coordinate_y))
+        games[game_id].player_white.positions.add((to_x, to_y))
+        games[game_id].update_possible_moves()
+
+    return redirect(url_for('game', game_id=game_id))
+
 @app.route('/game/<string:game_id>/select/<int:coordinate_x>/<int:coordinate_y>')
 @login_required
 def select(game_id, coordinate_x, coordinate_y):
@@ -214,6 +238,10 @@ def select(game_id, coordinate_x, coordinate_y):
 
     if not check_for_guest(games[game_id]):
         flash('You must first have an opponent to play with!', 'error')
+        return redirect(url_for('game', game_id=game_id))
+
+    if games[game_id].check_status():
+        flash('The game has ended!')
         return redirect(url_for('game', game_id=game_id))
 
     if games[game_id].check_select(coordinate_x, coordinate_y, current_user.id):
@@ -245,6 +273,10 @@ def move(game_id, coordinate_x, coordinate_y, to_x, to_y):
 
     if not check_for_guest(games[game_id]):
         flash('You must first have an opponent to play with!', 'error')
+        return redirect(url_for('game', game_id=game_id))
+
+    if games[game_id].check_status():
+        flash('The game has ended!')
         return redirect(url_for('game', game_id=game_id))
 
     if not games[game_id].check_select(coordinate_x, coordinate_y, current_user.id):
@@ -289,10 +321,9 @@ def move(game_id, coordinate_x, coordinate_y, to_x, to_y):
         return redirect(url_for('select', game_id=game_id, coordinate_x=coordinate_x, coordinate_y=coordinate_y))
 
     # Check whether there's a player with no pieces left
-    if games[game_id].check_status() == 'win-black':
-        flash('Black Player wins the match! Congratulations!', 'success')
-    elif games[game_id].check_status() == 'win-white':
-        flash('White Player wins the match! Congratulations!', 'success')
+    if games[game_id].check_status():
+        if not games[game_id].save_game():
+            flash('Error occurred while saving the game!', 'error')
 
     return redirect(url_for('game', game_id=game_id))
 

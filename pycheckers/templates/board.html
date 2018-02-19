@@ -10,7 +10,7 @@
                         {% for row in board.rows %}
                             <tr id="row-{{ row }}">
                             {% for column in board.columns %}
-                                <td id="box-{{ row }},{{ column }}">
+                                <td id="box-{{ row }},{{ column }}" title="{{ row }}, {{ column }}">
                                     {% if (row, column) in player_white.positions %}
                                         {% if guest and turn == guest.id and g.user.id == guest.id %}
                                             {% if
@@ -93,6 +93,18 @@
                     </span>
                     <span class="label label--game tag big focus">Round no. {{ round }}</span>
 
+                    {% if game.finished %}
+                        {% if game.finished == g.user.id and g.user.id in (game.creator, game.guest) %}
+                            <div class="message success u-margin-top">
+                                <span class="large">You win! Congratulations!</span>
+                            </div>
+                        {% elif g.user.id in (game.creator, game.guest) and game.finished != g.user.id %}
+                            <div class="message error u-margin-top">
+                                <span class="large">You lose!</span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
                     {% if not guest %}
                         <div class="u-margin-top">
                             {% if g.user.id != creator.id %}
@@ -153,20 +165,23 @@
 
             </div>
 
+            <button class="u-margin-top" data-component="toggleme" data-target="#togglebox-target" data-text="Hide debug">Show debug</button>
 
-            <h2>White</h2>
-            <pre><code>
-                Moves:         {{ player_white.pieces_with_moves }}
-                Captures:      {{ player_white.pieces_with_captures }}
-                Kings:         {{ player_white.kings }}
-            </code></pre>
+            <div id="togglebox-target" class="hide u-margin-top">
+                <h2>White</h2>
+                <pre><code>
+                    Moves:         {{ player_white.pieces_with_moves }}
+                    Captures:      {{ player_white.pieces_with_captures }}
+                    Kings:         {{ player_white.kings }}
+                </code></pre>
 
-            <h2>Black</h2>
-            <pre><code>
-                Moves:         {{ player_black.pieces_with_moves }}
-                Captures:      {{ player_black.pieces_with_captures }}
-                Kings:         {{ player_black.kings }}
-            </code></pre>
+                <h2>Black</h2>
+                <pre><code>
+                    Moves:         {{ player_black.pieces_with_moves }}
+                    Captures:      {{ player_black.pieces_with_captures }}
+                    Kings:         {{ player_black.kings }}
+                </code></pre>
+            </div>
             
         </div>
 {% endblock %}
@@ -198,6 +213,14 @@
                     check();
                 }, 2000);  // This may bloat the server heavily :/
             })();
+        });
+    </script>
+    <script>
+        $('div.piece').on('click', function() {
+            $(this).animation('shake');
+        });
+        $('a.piece').on('click', function(e) {
+            $(this).animation('pulse');
         });
     </script>
 {% endblock %}

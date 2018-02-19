@@ -27,6 +27,7 @@ class Game:
         self.guest = False
         self.turn = creator
         self.round = 1
+        self.finished = None
         self.save_timestamp()
         self.board = Board()
         self.rows = self.board.get_rows()
@@ -35,6 +36,7 @@ class Game:
         self.player_white = PlayerWhite()
         self.update_possible_moves()
         self.update_possible_captures()
+        self.check_status()
 
     def save_game(self):
         try:
@@ -95,6 +97,20 @@ class Game:
         """
         return self.timestamp
 
+    def check_status(self):
+        if not self.player_black.pieces_with_moves and not self.player_black.pieces_with_captures \
+            and not self.player_white.pieces_with_moves and not self.player_white.pieces_with_captures:
+            self.finished = True
+        else:
+            if not self.player_black.pieces or \
+                    (not self.player_black.pieces_with_moves and not self.player_black.pieces_with_captures):
+                self.finished = self.guest  # White wins
+            elif not self.player_white.pieces or \
+                    (not self.player_white.pieces_with_moves and not self.player_white.pieces_with_captures):
+                self.finished = self.creator # Black wins
+
+        return self.finished
+
     def check_select(self, coordinate_x, coordinate_y, current_user_id):
         """
         This function checks whether a selected piece belongs to a player who's turn it is.
@@ -139,20 +155,6 @@ class Game:
                 return True
 
         return False
-
-    def check_status(self):
-        """
-        This simple functions checks whether there are pieces left for both players.
-        In case one of the players has no pieces left, it return string 'win-{opposite}'.
-        Otherwise it'll return `no-win'.
-        :return string: A string indicating the status: 'win-black' | 'win-white' | 'no-win'
-        """
-        if not self.player_black.pieces or not self.player_black.pieces_with_moves:
-            return 'win-white'
-        elif not self.player_white.pieces or not self.player_white.pieces_with_moves:
-            return 'win-black'
-
-        return 'no-win'
 
     def handle_move(self, coordinate_x, coordinate_y, to_x, to_y):
         """
@@ -262,10 +264,10 @@ class Game:
                 self.player_white.pieces -= 1
                 if (med_x, med_y) in self.player_white.kings:
                     self.player_white.kings.remove((med_x, med_y))
-            # Update possible captures
-            self.update_possible_captures()
+                # Update possible captures
+                self.update_possible_captures()
             # Check if the moved piece will be able to capture again
-            if (to_x, to_y) in self.player_black.pieces_with_captures:
+            if (to_x, to_y) in self.player_black.pieces_with_captures.keys():
                 self.update_possible_captures((to_x, to_y))
             else:
                 self.change_turn()
@@ -284,10 +286,10 @@ class Game:
                 self.player_black.pieces -= 1
                 if (med_x, med_y) in self.player_black.kings:
                     self.player_black.kings.remove((med_x, med_y))
-            # Update possible captures
-            self.update_possible_captures()
+                # Update possible captures
+                self.update_possible_captures()
             # Check if the moved piece will be able to capture again
-            if (to_x, to_y) in self.player_white.pieces_with_captures:
+            if (to_x, to_y) in self.player_white.pieces_with_captures.keys():
                 self.update_possible_captures((to_x, to_y))
             else:
                 self.change_turn()
@@ -301,34 +303,34 @@ class Game:
         :param first_capture:
         :return:
         """
-        self.player_black.pieces_with_captures = dict()
-        self.player_white.pieces_with_captures = dict()
+        self.player_black.pieces_with_captures.clear()
+        self.player_white.pieces_with_captures.clear()
 
         if first_capture:
             if first_capture in self.player_black.positions:
-                possible_captures = self.check_possible_captures('black', first_capture[0], first_capture[1])
+                possible_captures = self.check_possible_captures(first_capture[0], first_capture[1])
                 if possible_captures:
                     self.player_black.pieces_with_captures[first_capture] = possible_captures
+                    return True
             elif first_capture in self.player_white.positions:
-                possible_captures = self.check_possible_captures('white', first_capture[0], first_capture[1])
+                possible_captures = self.check_possible_captures(first_capture[0], first_capture[1])
                 if possible_captures:
                     self.player_white.pieces_with_captures[first_capture] = possible_captures
+                    return True
         else:
             for piece in self.player_black.positions:
-                possible_captures = self.check_possible_captures('black', piece[0], piece[1])
+                possible_captures = self.check_possible_captures(piece[0], piece[1])
                 if possible_captures:
                     self.player_black.pieces_with_captures[piece] = possible_captures
-
             for piece in self.player_white.positions:
-                possible_captures = self.check_possible_captures('white', piece[0], piece[1])
+                possible_captures = self.check_possible_captures(piece[0], piece[1])
                 if possible_captures:
                     self.player_white.pieces_with_captures[piece] = possible_captures
         return True
 
-    def check_possible_captures(self, player, coordinate_x, coordinate_y):
+    def check_possible_captures(self, coordinate_x, coordinate_y):
         """
-
-        :param player:
+        Checks for all possible captures for a given piece.
         :param coordinate_x:
         :param coordinate_y:
         :return:
@@ -351,12 +353,12 @@ class Game:
         for i in range(len(targets)):
             if targets[i][0] in self.board.get_rows() and targets[i][1] in self.board.get_columns():
                 if targets[i] not in self.player_black.positions and targets[i] not in self.player_white.positions:
-                    if player == 'black':
+                    if (coordinate_x, coordinate_y) in self.player_black.positions:
                         if targets[i][0] < coordinate_x or \
                                 (targets[i][0] > coordinate_x and (coordinate_x, coordinate_y) in self.player_black.kings):
                             if mids[i] in self.player_white.positions:
                                 valid_targets.append(targets[i])
-                    elif player == 'white':
+                    elif (coordinate_x, coordinate_y) in self.player_white.positions:
                         if targets[i][0] > coordinate_x or \
                                 (targets[i][0] < coordinate_x and (coordinate_x, coordinate_y) in self.player_white.kings):
                             if mids[i] in self.player_black.positions:
@@ -370,8 +372,8 @@ class Game:
         Iterate player's pieces and fill the dictionary with all the possible moves.
         :return boolean:
         """
-        self.player_black.pieces_with_moves = dict()
-        self.player_white.pieces_with_moves = dict()
+        self.player_black.pieces_with_moves.clear()
+        self.player_white.pieces_with_moves.clear()
 
         for piece in self.player_black.positions:
             possible_moves = self.check_possible_moves(piece[0], piece[1])

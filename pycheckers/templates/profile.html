@@ -6,7 +6,7 @@
             <span class="fas fa-user"></span>
             {{ user.username }}
         </h2>
-        <h3>Your games</h3>
+        <h3>Your current games</h3>
         {% if games %}
             <div class="row gutters">
             {% for game in games %}
@@ -24,6 +24,24 @@
             </div>
         {% else %}
             <p>You've got no games running! Why don't you <a href="{{ url_for('start') }}">start one</a>?</p>
+        {% endif %}
+
+        {% if past_games %}
+            <h3>Your past games</h3>
+            <div class="row gutters">
+            {% for game in past_games %}
+                <div class="col col-4">
+                    <a class="game" href="{{ url_for('game', game_id=game) }}">
+                        {% if past_games[game].gametype == 'human' %}
+                            <span class="label black">Human vs. human</span>
+                        {% else %}
+                            <span class="label focus">Human vs. computer</span>
+                        {% endif %}
+                        <h4>{{ past_games[game].name }}</h4>
+                    </a>
+                </div>
+            {% endfor %}
+            </div>
         {% endif %}
     </div>
 {% endblock %}

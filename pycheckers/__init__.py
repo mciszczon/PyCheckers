@@ -36,5 +36,6 @@ try:
         if filename.endswith('.p'):
             game_id = filename.split('.')[0]
             views.games[game_id] = pickle.load(open('games/' + filename, 'rb'))
+            views.games[game_id].check_status()
 except Exception as e:
     print(traceback.format_exc(e))
