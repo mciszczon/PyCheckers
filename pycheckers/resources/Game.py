@@ -267,11 +267,10 @@ class Game:
                 # Update possible captures
                 self.update_possible_captures()
             # Check if the moved piece will be able to capture again
-            if (to_x, to_y) in self.player_black.pieces_with_captures.keys():
-                self.update_possible_captures((to_x, to_y))
+            if (to_x, to_y) in self.player_black.pieces_with_captures:
+                self.update_possible_captures_for_one(to_x, to_y)
             else:
                 self.change_turn()
-
             return True
         elif self.turn == self.guest and (med_x, med_y) in self.player_black.positions:
             if (self.player_white.pieces_with_captures and (coordinate_x, coordinate_y) in self.player_white.pieces_with_captures) \
@@ -289,43 +288,50 @@ class Game:
                 # Update possible captures
                 self.update_possible_captures()
             # Check if the moved piece will be able to capture again
-            if (to_x, to_y) in self.player_white.pieces_with_captures.keys():
-                self.update_possible_captures((to_x, to_y))
+            if (to_x, to_y) in self.player_white.pieces_with_captures:
+                self.update_possible_captures_for_one(to_x, to_y)
             else:
                 self.change_turn()
             return True
 
         return False
 
-    def update_possible_captures(self, first_capture = None):
+    def update_possible_captures_for_one(self, coordinate_x, coordinate_y):
         """
 
-        :param first_capture:
+        :param coordinate_x:
+        :param coordinate_y:
         :return:
         """
         self.player_black.pieces_with_captures.clear()
         self.player_white.pieces_with_captures.clear()
 
-        if first_capture:
-            if first_capture in self.player_black.positions:
-                possible_captures = self.check_possible_captures(first_capture[0], first_capture[1])
-                if possible_captures:
-                    self.player_black.pieces_with_captures[first_capture] = possible_captures
-                    return True
-            elif first_capture in self.player_white.positions:
-                possible_captures = self.check_possible_captures(first_capture[0], first_capture[1])
-                if possible_captures:
-                    self.player_white.pieces_with_captures[first_capture] = possible_captures
-                    return True
+        if (coordinate_x, coordinate_y) in self.player_black.positions:
+            possible_captures = self.check_possible_captures(coordinate_x, coordinate_y)
+            if possible_captures:
+                self.player_black.pieces_with_captures[(coordinate_x, coordinate_y)] = possible_captures
+            return True
+        elif (coordinate_x, coordinate_y) in self.player_white.positions:
+            possible_captures = self.check_possible_captures(coordinate_x, coordinate_y)
+            if possible_captures:
+                self.player_white.pieces_with_captures[(coordinate_x, coordinate_y)] = possible_captures
+            return True
         else:
-            for piece in self.player_black.positions:
-                possible_captures = self.check_possible_captures(piece[0], piece[1])
-                if possible_captures:
-                    self.player_black.pieces_with_captures[piece] = possible_captures
-            for piece in self.player_white.positions:
-                possible_captures = self.check_possible_captures(piece[0], piece[1])
-                if possible_captures:
-                    self.player_white.pieces_with_captures[piece] = possible_captures
+            return False
+
+    def update_possible_captures(self):
+        """
+
+        :return:
+        """
+        for piece in self.player_black.positions:
+            possible_captures = self.check_possible_captures(piece[0], piece[1])
+            if possible_captures:
+                self.player_black.pieces_with_captures[piece] = possible_captures
+        for piece in self.player_white.positions:
+            possible_captures = self.check_possible_captures(piece[0], piece[1])
+            if possible_captures:
+                self.player_white.pieces_with_captures[piece] = possible_captures
         return True
 
     def check_possible_captures(self, coordinate_x, coordinate_y):
