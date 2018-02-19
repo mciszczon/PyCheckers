@@ -171,14 +171,12 @@ class Game:
         # Black Player
         if self.turn == self.creator and (coordinate_x, coordinate_y) in self.player_black.positions:
             if self.move(coordinate_x, coordinate_y, to_x, to_y):
-                self.update_possible_captures()
                 self.add_kings()
                 self.update_possible_moves()
                 return True
         # White Player
         elif self.turn == self.guest and (coordinate_x, coordinate_y) in self.player_white.positions:
             if self.move(coordinate_x, coordinate_y, to_x, to_y):
-                self.update_possible_captures()
                 self.add_kings()
                 self.update_possible_moves()
                 return True
@@ -212,6 +210,7 @@ class Game:
                     if (coordinate_x, coordinate_y) in self.player_black.kings:
                         self.player_black.kings.remove((coordinate_x, coordinate_y))
                         self.player_black.kings.add((to_x, to_y))
+                    self.update_possible_captures()
                     self.change_turn()
                     return True
                 else:
@@ -225,6 +224,7 @@ class Game:
                     if (coordinate_x, coordinate_y) in self.player_white.kings:
                         self.player_white.kings.remove((coordinate_x, coordinate_y))
                         self.player_white.kings.add((to_x, to_y))
+                    self.update_possible_captures()
                     self.change_turn()
                     return True
                 else:
