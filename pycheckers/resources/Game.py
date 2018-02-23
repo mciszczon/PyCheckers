@@ -303,6 +303,7 @@ class Game:
         :param coordinate_y:
         :return:
         """
+
         self.player_black.pieces_with_captures.clear()
         self.player_white.pieces_with_captures.clear()
 
@@ -324,6 +325,10 @@ class Game:
 
         :return:
         """
+
+        self.player_black.pieces_with_captures.clear()
+        self.player_white.pieces_with_captures.clear()
+
         for piece in self.player_black.positions:
             possible_captures = self.check_possible_captures(piece[0], piece[1])
             if possible_captures:
